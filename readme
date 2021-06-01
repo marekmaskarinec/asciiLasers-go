@@ -1,0 +1,17 @@
+AsciiLasers implementation in go
+
+Run/compile instructions:
+	Run:
+		go run .
+	Compile:
+		go build
+
+Done:
+	parsing
+	generating graph (with output mirror checking)
+	defs for all current objects
+
+Todo:
+	evaluation
+	function for objects
+	ide (maybe)
