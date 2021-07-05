@@ -82,8 +82,80 @@ func doDecrement(o *Object, c *Compiler) (uint32, bool) {
 	return v[0] - 1, true
 }
 
-func doDeleter(o *Object c *Compiler) (uint32, bool) {
+func doDeleter(o *Object, c *Compiler) (uint32, bool) {
 	return 0, false
+}
+
+func doSetValue(o *Object, c *Compiler, val uint32) (uint32, bool) {
+	v := o.extractLasers(1, c.CurrentTick)
+	if len(v) == 0 {
+		return 0, false
+	}
+	return val, true
+}
+
+func do0(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 0)
+}
+
+func do1(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 1)
+}
+
+func do2(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 2)
+}
+
+func do3(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 3)
+}
+
+func do4(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 4)
+}
+
+func do5(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 5)
+}
+
+func do6(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 6)
+}
+
+func do7(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 7)
+}
+
+func do8(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 8)
+}
+
+func do9(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 9)
+}
+
+func doA(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 10)
+}
+
+func doB(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 11)
+}
+
+func doC(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 12)
+}
+
+func doD(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 13)
+}
+
+func doE(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 14)
+}
+
+func doF(o *Object, c *Compiler) (uint32, bool) {
+	return doSetValue(o, c, 14)
 }
 
 func doMath(o *Object, c *Compiler, m func(a, b uint32) uint32) (uint32, bool) {
@@ -165,7 +237,24 @@ func (c *Compiler) initDefs() {
 	c.Defs['*'] = Def{"reflector", '*', 1, doReflector}
 	c.Defs['i'] = Def{"increment", 'i', 1, doIncrement}
 	c.Defs['d'] = Def{"decrement", 'd', 1, doDecrement}
-	// 0 - F is handled as a special case
+
+	c.Defs['0'] = Def{"set to 0", '0', 1, do0}
+	c.Defs['1'] = Def{"set to 1", '1', 1, do1}
+	c.Defs['2'] = Def{"set to 2", '2', 1, do2}
+	c.Defs['3'] = Def{"set to 3", '3', 1, do3}
+	c.Defs['4'] = Def{"set to 4", '4', 1, do4}
+	c.Defs['5'] = Def{"set to 5", '5', 1, do5}
+	c.Defs['6'] = Def{"set to 6", '6', 1, do6}
+	c.Defs['7'] = Def{"set to 7", '7', 1, do7}
+	c.Defs['8'] = Def{"set to 8", '8', 1, do8}
+	c.Defs['9'] = Def{"set to 9", '9', 1, do9}
+	c.Defs['A'] = Def{"set to 10", 'A', 1, doA}
+	c.Defs['B'] = Def{"set to 11", 'B', 1, doB}
+	c.Defs['C'] = Def{"set to 12", 'C', 1, doC}
+	c.Defs['D'] = Def{"set to 13", 'D', 1, doD}
+	c.Defs['E'] = Def{"set to 14", 'E', 1, doE}
+	c.Defs['F'] = Def{"set to 15", 'F', 1, doF}
+
 	c.Defs['#'] = Def{"deleter", '#', 1, doDeleter}
 	c.Defs['m'] = Def{"multiplication", 'm', 2, doMultiplication}
 	c.Defs['n'] = Def{"division", 'n', 2, doDivision}
