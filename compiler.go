@@ -2,9 +2,12 @@ package main
 
 import (
 	"os"
+	"time"
 	"fmt"
 	"strings"
 )
+
+var startTime time.Time
 
 type Compiler struct {
 	Input []string
@@ -96,7 +99,8 @@ func (c *Compiler) tick() {
 	}
 
 	if exit {
-		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\n", c.CurrentTick + 1)
+		now := time.Now()
+		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\nTicks per second: %f.\n", c.CurrentTick + 1, float32(c.CurrentTick+1)/float32(now.Sub(startTime).Nanoseconds())*1000000000)
 		os.Exit(0)
 	}
 

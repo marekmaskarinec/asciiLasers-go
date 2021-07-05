@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"io"
+	"time"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 		fmt.Println(&o)
 	}*/
 
+	startTime = time.Now()
 	for !c.ShouldQuit {
 		c.tick()
 	}
