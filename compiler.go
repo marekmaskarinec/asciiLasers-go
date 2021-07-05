@@ -8,10 +8,12 @@ type Compiler struct {
 	Input []string
 	Objects []Object
 	Defs [256]Def
+	CurrentTick uint64 // overflowing shouldn't break it, but just in case
+	ShouldQuit bool
 }
 
 // Gets all object in the board
-func (c *Compiler) GetObjects() {
+func (c *Compiler) getObjects() {
 	for y := range c.Input {
 		for x, s := range c.Input[y] {
 			if s != ' ' {
@@ -22,13 +24,13 @@ func (c *Compiler) GetObjects() {
 }
 
 // Checks, if v is in bounds
-func (c *Compiler) InBounds(v Vec2) bool {
+func (c *Compiler) inBounds(v Vec2) bool {
 	return !(v.X < 0 || v.Y < 0 || v.Y >= len(c.Input) || v.X >= len(c.Input[v.Y]))
 }
 
 // Returns the byte on pos v
-func (c *Compiler) OnPos(v Vec2) byte {
-	if !c.InBounds(v) {
+func (c *Compiler) onPos(v Vec2) byte {
+	if !c.inBounds(v) {
 		return ' '
 	}
 
@@ -36,7 +38,7 @@ func (c *Compiler) OnPos(v Vec2) byte {
 }
 
 // Returns an object on a pos v. O(n)
-func (c *Compiler) ObjByPos(v Vec2) int {
+func (c *Compiler) objByPos(v Vec2) int {
 	for i:=0; i < len(c.Objects); i++ {
 		if c.Objects[i].Pos.Cmp(v) {
 			return i
@@ -46,42 +48,52 @@ func (c *Compiler) ObjByPos(v Vec2) int {
 }
 
 // Walks in a direction v from start until it reaches the bounds or comes across an object
-func (c *Compiler) WalkDir(start Vec2, v Vec2) Vec2 {
+func (c *Compiler) walkDir(start Vec2, v Vec2) Vec2 {
 	pos:=start.Add(v)
-	for c.InBounds(pos) && c.OnPos(pos) == ' ' { // this doesn't do the torus thingie
+	for c.inBounds(pos) && c.onPos(pos) == ' ' { // this doesn't do the torus thingie
 		pos = pos.Add(v)
 	}
 	return pos
 }
 
 // Generates objects from a graph
-func (c *Compiler) GenGraph() {
+func (c *Compiler) genGraph() {
 	for i := range c.Objects {
 		c.Objects[i].Next = make([]int, 4)
-		isMirror := c.Objects[i].IsMirror()
+		isMirror := c.Objects[i].isMirror()
 		for j:=0; j < 4; j++ {
 			c.Objects[i].Next[j] = -1
 
-			next := c.WalkDir(c.Objects[i].Pos, MOTIONS[j])
+			next := c.walkDir(c.Objects[i].Pos, MOTIONS[j])
 			if !isMirror {
 				if !next.Cmp(c.Objects[i].Pos.Add(MOTIONS[j])) {
 					continue
 				}
 
-				if c.OnPos(next) != outMirrors[j] {
+				if c.onPos(next) != outMirrors[j] {
 					continue
 				}
 			}
 
-			c.Objects[i].Next[j] = c.ObjByPos(next)
+			c.Objects[i].Next[j] = c.objByPos(next)
 		}
 	}
 }
 
-func Compile(inp string) Compiler {
+func (c *Compiler) tick() {
+	for i := range c.Objects {
+		c.Objects[i].eval(c)
+	}
+
+	c.CurrentTick++
+}
+
+func compile(inp string) Compiler {
 	c := Compiler{}
 	c.Input = strings.Split(inp, "\n")
-	c.GetObjects()
-	c.GenGraph()
+	c.getObjects()
+	c.genGraph()
+	c.ShouldQuit = false
 	return c
 }
+

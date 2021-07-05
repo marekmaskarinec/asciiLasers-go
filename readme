@@ -10,8 +10,9 @@ Done:
 	parsing
 	generating graph (with output mirror checking)
 	defs for all current objects
+	laser evaluation
+	functions for some objects
 
 Todo:
-	evaluation
-	function for objects
+	wires
 	ide (maybe)

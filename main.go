@@ -13,6 +13,15 @@ func main() {
 
 	fmt.Println(string(inp))
 
-	c := Compile(string(inp))
-	fmt.Println(c.Objects)
+	c := compile(string(inp))
+
+	c.initDefs()
+	/*for _, o := range c.Objects {
+		fmt.Println(&o)
+	}*/
+
+	for !c.ShouldQuit {
+		c.tick()
+	}
 }
+
