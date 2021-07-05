@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"fmt"
 	"strings"
 )
 
@@ -83,6 +85,19 @@ func (c *Compiler) genGraph() {
 func (c *Compiler) tick() {
 	for i := range c.Objects {
 		c.Objects[i].eval(c)
+	}
+
+	exit := true
+	for i := range c.Objects {
+		if len(c.Objects[i].Lasers) != 0 {
+			exit = false
+			break
+		}
+	}
+
+	if exit {
+		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\n", c.CurrentTick + 1)
+		os.Exit(0)
 	}
 
 	c.CurrentTick++
