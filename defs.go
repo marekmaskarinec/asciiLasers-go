@@ -8,7 +8,7 @@ import (
 type Def struct {
 	Name string
 	Char byte
-	Argc int // 0 means that it is operated by current. Negative values mean, it can be operated by both + argc
+	Argc int                                         // 0 means that it is operated by current. Negative values mean, it can be operated by both + argc
 	Func func(o *Object, c *Compiler) (uint32, bool) // returns a laser as the output, and true if it should be sent
 }
 
@@ -168,23 +168,23 @@ func doMath(o *Object, c *Compiler, m func(a, b uint32) uint32) (uint32, bool) {
 }
 
 func doMultiplication(o *Object, c *Compiler) (uint32, bool) {
-	return doMath(o, c, func(a, b uint32) uint32 {return a * b})
+	return doMath(o, c, func(a, b uint32) uint32 { return a * b })
 }
 
 func doDivision(o *Object, c *Compiler) (uint32, bool) {
-	return doMath(o, c, func(a, b uint32) uint32 {return a / b})
+	return doMath(o, c, func(a, b uint32) uint32 { return a / b })
 }
 
 func doAddition(o *Object, c *Compiler) (uint32, bool) {
-	return doMath(o, c, func(a, b uint32) uint32 {return a + b})
+	return doMath(o, c, func(a, b uint32) uint32 { return a + b })
 }
 
 func doSubtraction(o *Object, c *Compiler) (uint32, bool) {
-	return doMath(o, c, func(a, b uint32) uint32 {return a - b})
+	return doMath(o, c, func(a, b uint32) uint32 { return a - b })
 }
 
 func doModulo(o *Object, c *Compiler) (uint32, bool) {
-	return doMath(o, c, func(a, b uint32) uint32 {return a % b})
+	return doMath(o, c, func(a, b uint32) uint32 { return a % b })
 }
 
 //mirrors
@@ -232,7 +232,7 @@ func (c *Compiler) initDefs() {
 	c.Defs['<'] = Def{"left mirror", '<', -1, doLeftMirror}
 	c.Defs['='] = Def{"horizontal mirror", '=', -1, nil}
 	c.Defs['H'] = Def{"vertical mirror", 'H', -1, nil}
-	
+
 	// modifiers
 	c.Defs['*'] = Def{"reflector", '*', 1, doReflector}
 	c.Defs['i'] = Def{"increment", 'i', 1, doIncrement}

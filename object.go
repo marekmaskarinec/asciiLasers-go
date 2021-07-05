@@ -1,20 +1,20 @@
 package main
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 type Laser struct {
-	Val uint32
+	Val  uint32
 	Tick uint64
 }
 
 type Object struct {
-	Def byte
-	Pos Vec2
-	Lasers []Laser
-	Next []int // they are not represented as pointers, but as indexes in c.Objects
+	Def     byte
+	Pos     Vec2
+	Lasers  []Laser
+	Next    []int // they are not represented as pointers, but as indexes in c.Objects
 	Current bool
 }
 
@@ -29,7 +29,7 @@ func (o *Object) isMirror() bool {
 func (o *Object) extractLasers(count int, tick uint64) []uint32 {
 	out := []uint32{}
 
-	for i:=0; (i < count || count == -1) && i < len(o.Lasers); i++ {
+	for i := 0; (i < count || count == -1) && i < len(o.Lasers); i++ {
 		out = append(out, o.Lasers[i].Val)
 	}
 

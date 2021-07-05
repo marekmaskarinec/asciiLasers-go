@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"io"
+	"os"
 	"time"
 )
 
@@ -26,4 +26,3 @@ func main() {
 		c.tick()
 	}
 }
-

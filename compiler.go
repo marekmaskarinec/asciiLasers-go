@@ -1,20 +1,20 @@
 package main
 
 import (
-	"os"
-	"time"
 	"fmt"
+	"os"
 	"strings"
+	"time"
 )
 
 var startTime time.Time
 
 type Compiler struct {
-	Input []string
-	Objects []Object
-	Defs [256]Def
+	Input       []string
+	Objects     []Object
+	Defs        [256]Def
 	CurrentTick uint64 // overflowing shouldn't break it, but just in case
-	ShouldQuit bool
+	ShouldQuit  bool
 }
 
 // Gets all object in the board
@@ -44,7 +44,7 @@ func (c *Compiler) onPos(v Vec2) byte {
 
 // Returns an object on a pos v. O(n)
 func (c *Compiler) objByPos(v Vec2) int {
-	for i:=0; i < len(c.Objects); i++ {
+	for i := 0; i < len(c.Objects); i++ {
 		if c.Objects[i].Pos.Cmp(v) {
 			return i
 		}
@@ -54,7 +54,7 @@ func (c *Compiler) objByPos(v Vec2) int {
 
 // Walks in a direction v from start until it reaches the bounds or comes across an object
 func (c *Compiler) walkDir(start Vec2, v Vec2) Vec2 {
-	pos:=start.Add(v)
+	pos := start.Add(v)
 	for c.inBounds(pos) && c.onPos(pos) == ' ' { // this doesn't do the torus thingie
 		pos = pos.Add(v)
 	}
@@ -66,7 +66,7 @@ func (c *Compiler) genGraph() {
 	for i := range c.Objects {
 		c.Objects[i].Next = make([]int, 4)
 		isMirror := c.Objects[i].isMirror()
-		for j:=0; j < 4; j++ {
+		for j := 0; j < 4; j++ {
 			c.Objects[i].Next[j] = -1
 
 			next := c.walkDir(c.Objects[i].Pos, MOTIONS[j])
@@ -100,7 +100,7 @@ func (c *Compiler) tick() {
 
 	if exit {
 		now := time.Now()
-		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\nTicks per second: %f.\n", c.CurrentTick + 1, float32(c.CurrentTick+1)/float32(now.Sub(startTime).Nanoseconds())*1000000000)
+		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\nTicks per second: %f.\n", c.CurrentTick+1, float32(c.CurrentTick+1)/float32(now.Sub(startTime).Nanoseconds())*1000000000)
 		os.Exit(0)
 	}
 
@@ -115,4 +115,3 @@ func compile(inp string) Compiler {
 	c.ShouldQuit = false
 	return c
 }
-
