@@ -22,6 +22,15 @@ func doValuePrint(o *Object, c *Compiler) (uint32, bool) {
 	return 0, false
 }
 
+func doCharPrint(o *Object, c *Compiler) (uint32, bool) {
+	lasers := o.extractLasers(-1, c.CurrentTick)
+	for _, v := range lasers {
+		fmt.Printf("%c", v)
+	}
+
+	return 0, false
+}
+
 func doProgramStart(o *Object, c *Compiler) (uint32, bool) {
 	if c.CurrentTick == 0 {
 		return 1, true
@@ -39,6 +48,12 @@ func doProgramEnd(o *Object, c *Compiler) (uint32, bool) {
 	return 0, false
 }
 
+func doInput(o *Object, c *Compiler) (uint32, bool) {
+	var out uint32
+	fmt.Scanf("%u", &out)
+	return out, true
+}
+
 // modifiers
 func doReflector(o *Object, c *Compiler) (uint32, bool) {
 	v := o.extractLasers(1, c.CurrentTick)
@@ -47,6 +62,57 @@ func doReflector(o *Object, c *Compiler) (uint32, bool) {
 	}
 
 	return v[0], true
+}
+
+func doIncrement(o *Object, c *Compiler) (uint32, bool) {
+	v := o.extractLasers(1, c.CurrentTick)
+	if len(v) == 0 {
+		return 0, false
+	}
+
+	return v[0] + 1, true
+}
+
+func doDecrement(o *Object, c *Compiler) (uint32, bool) {
+	v := o.extractLasers(1, c.CurrentTick)
+	if len(v) == 0 {
+		return 0, false
+	}
+
+	return v[0] - 1, true
+}
+
+func doDeleter(o *Object c *Compiler) (uint32, bool) {
+	return 0, false
+}
+
+func doMath(o *Object, c *Compiler, m func(a, b uint32) uint32) (uint32, bool) {
+	v := o.extractLasers(2, c.CurrentTick)
+	if len(v) != 2 {
+		return 0, false
+	}
+
+	return m(v[0], v[1]), true
+}
+
+func doMultiplication(o *Object, c *Compiler) (uint32, bool) {
+	return doMath(o, c, func(a, b uint32) uint32 {return a * b})
+}
+
+func doDivision(o *Object, c *Compiler) (uint32, bool) {
+	return doMath(o, c, func(a, b uint32) uint32 {return a / b})
+}
+
+func doAddition(o *Object, c *Compiler) (uint32, bool) {
+	return doMath(o, c, func(a, b uint32) uint32 {return a + b})
+}
+
+func doSubtraction(o *Object, c *Compiler) (uint32, bool) {
+	return doMath(o, c, func(a, b uint32) uint32 {return a - b})
+}
+
+func doModulo(o *Object, c *Compiler) (uint32, bool) {
+	return doMath(o, c, func(a, b uint32) uint32 {return a % b})
 }
 
 //mirrors
@@ -80,10 +146,10 @@ func doLeftMirror(o *Object, c *Compiler) (uint32, bool) {
 func (c *Compiler) initDefs() {
 	// IO
 	c.Defs['$'] = Def{"value print", '$', 1, doValuePrint}
-	c.Defs['&'] = Def{"char print", '&', 1, nil}
+	c.Defs['&'] = Def{"char print", '&', 1, doCharPrint}
 	c.Defs['{'] = Def{"program start", '{', 0, doProgramStart}
 	c.Defs['}'] = Def{"program end", '}', -1, doProgramEnd}
-	c.Defs['_'] = Def{"input", '_', -1, nil}
+	c.Defs['_'] = Def{"input", '_', -1, doInput}
 
 	// mirrors
 	c.Defs['\\'] = Def{"backslash mirror", '\\', -1, nil}
@@ -97,15 +163,15 @@ func (c *Compiler) initDefs() {
 	
 	// modifiers
 	c.Defs['*'] = Def{"reflector", '*', 1, doReflector}
-	c.Defs['i'] = Def{"increment", 'i', 1, nil}
-	c.Defs['d'] = Def{"decrement", 'd', 1, nil}
+	c.Defs['i'] = Def{"increment", 'i', 1, doIncrement}
+	c.Defs['d'] = Def{"decrement", 'd', 1, doDecrement}
 	// 0 - F is handled as a special case
-	c.Defs['#'] = Def{"deleter", '#', 1, nil}
-	c.Defs['m'] = Def{"multiplication", 'm', 2, nil}
-	c.Defs['n'] = Def{"division", 'n', 2, nil}
-	c.Defs['a'] = Def{"addition", 'a', 2, nil}
-	c.Defs['s'] = Def{"subtraction", 's', 2, nil}
-	c.Defs['l'] = Def{"modulo", 'l', 2, nil}
+	c.Defs['#'] = Def{"deleter", '#', 1, doDeleter}
+	c.Defs['m'] = Def{"multiplication", 'm', 2, doMultiplication}
+	c.Defs['n'] = Def{"division", 'n', 2, doDivision}
+	c.Defs['a'] = Def{"addition", 'a', 2, doAddition}
+	c.Defs['s'] = Def{"subtraction", 's', 2, doSubtraction}
+	c.Defs['l'] = Def{"modulo", 'l', 2, doModulo}
 
 	// wires are TODO
 }

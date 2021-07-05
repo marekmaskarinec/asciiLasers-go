@@ -1,10 +1,10 @@
 List of implemented objects
 
 - [x] $
-- [ ] &
+- [x] &
 - [x] {
 - [x] }
-- [ ] _
+- [x] _
 - [ ] \\
 - [ ] /
 - [x] ^
@@ -14,12 +14,12 @@ List of implemented objects
 - [ ] =
 - [ ] H
 - [x] *
-- [ ] i
-- [ ] d
+- [x] i
+- [x] d
 - [ ] constants
-- [ ] #
-- [ ] m
-- [ ] n
-- [ ] a
-- [ ] s
-- [ ] l
+- [x] #
+- [x] m
+- [x] n
+- [x] a
+- [x] s
+- [x] l

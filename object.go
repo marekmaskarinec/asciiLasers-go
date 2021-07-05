@@ -33,7 +33,9 @@ func (o *Object) extractLasers(count int, tick uint64) []uint32 {
 		out = append(out, o.Lasers[i].Val)
 	}
 
-	o.Lasers = o.Lasers[len(out):]
+	if len(out) == count {
+		o.Lasers = o.Lasers[len(out):]
+	}
 	return out
 }
 
