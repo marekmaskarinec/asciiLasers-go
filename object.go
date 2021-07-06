@@ -33,7 +33,7 @@ func (o *Object) isWire() bool {
 func (o *Object) extractLasers(count int, tick uint64) []uint32 {
 	out := []uint32{}
 
-	for i := 0; (i < count || count == -1) && i < len(o.Lasers); i++ {
+	for i := 0; (i < count || count == -1) && i < len(o.Lasers) && o.Lasers[i].Tick != tick; i++ {
 		out = append(out, o.Lasers[i].Val)
 	}
 
@@ -41,7 +41,7 @@ func (o *Object) extractLasers(count int, tick uint64) []uint32 {
 		o.Lasers = []Laser{}
 	}
 
-	if len(out) == count || count == -1 {
+	if len(o.Lasers) > 0 && (len(out) == count || count == -1) {
 		o.Lasers = o.Lasers[len(out):]
 	}
 	return out

@@ -93,6 +93,24 @@ func (c *Compiler) genGraph() {
 	}
 }
 
+func (c *Compiler) prettyPrint() {
+	for y := 0; y < len(c.Input); y++ {
+		for x := 0; x < len(c.Input[y]); x++ {
+			if c.Input[y][x] == ' ' {
+				fmt.Print(" ")
+				continue
+			}
+
+			o := c.Objects[c.objByPos(Vec2{x, y})]
+			if len(o.Lasers) != 0 {
+				fmt.Print("\033[41m")
+			}
+			fmt.Printf("%c\033[0m", o.Def)
+		}
+		fmt.Println()
+	}
+}
+
 func (c *Compiler) tick() {
 	for i := range c.Objects {
 		c.Objects[i].eval(c)
@@ -106,7 +124,7 @@ func (c *Compiler) tick() {
 		}
 	}
 
-	if exit {
+	if c.CurrentTick > 100000 || exit {
 		now := time.Now()
 		fmt.Printf("\nExiting because of no lasers.\nTotal ticks: %d.\nTicks per second: %f.\n", c.CurrentTick+1, float32(c.CurrentTick+1)/float32(now.Sub(startTime).Nanoseconds())*1000000000)
 		os.Exit(0)
