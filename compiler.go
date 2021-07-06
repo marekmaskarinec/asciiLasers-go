@@ -64,12 +64,20 @@ func (c *Compiler) walkDir(start Vec2, v Vec2) Vec2 {
 // Generates objects from a graph
 func (c *Compiler) genGraph() {
 	for i := range c.Objects {
-		c.Objects[i].Next = make([]int, 4)
 		isMirror := c.Objects[i].isMirror()
+		isWire := c.Objects[i].isWire()
 		for j := 0; j < 4; j++ {
 			c.Objects[i].Next[j] = -1
 
 			next := c.walkDir(c.Objects[i].Pos, MOTIONS[j])
+			if isWire {
+				if o := c.objByPos(next); o >= 0 && c.Objects[o].isWire() {
+					c.Objects[i].Next[j] = o
+				}
+
+				continue
+			}
+
 			if !isMirror {
 				if !next.Cmp(c.Objects[i].Pos.Add(MOTIONS[j])) {
 					continue

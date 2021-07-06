@@ -17,12 +17,12 @@ func main() {
 	c := compile(string(inp))
 
 	c.initDefs()
-	/*for _, o := range c.Objects {
+	for _, o := range c.Objects {
 		fmt.Println(&o)
-	}*/
+	}
 
 	startTime = time.Now()
-	for !c.ShouldQuit {
+	/*for !c.ShouldQuit {
 		c.tick()
-	}
+	}*/
 }

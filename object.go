@@ -14,7 +14,7 @@ type Object struct {
 	Def     byte
 	Pos     Vec2
 	Lasers  []Laser
-	Next    []int // they are not represented as pointers, but as indexes in c.Objects
+	Next    [4]int // they are not represented as pointers, but as indexes in c.Objects
 	Current bool
 }
 
@@ -23,7 +23,11 @@ func (o *Object) String() string {
 }
 
 func (o *Object) isMirror() bool {
-	return strings.Contains("<>v^/\\", string(o.Def))
+	return strings.Contains("<>v^", string(o.Def))
+}
+
+func (o *Object) isWire() bool {
+	return strings.Contains("-|+O", string(o.Def))
 }
 
 func (o *Object) extractLasers(count int, tick uint64) []uint32 {
@@ -31,6 +35,10 @@ func (o *Object) extractLasers(count int, tick uint64) []uint32 {
 
 	for i := 0; (i < count || count == -1) && i < len(o.Lasers); i++ {
 		out = append(out, o.Lasers[i].Val)
+	}
+
+	if count == -1 {
+		o.Lasers = []Laser{}
 	}
 
 	if len(out) == count || count == -1 {

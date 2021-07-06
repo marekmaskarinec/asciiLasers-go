@@ -191,7 +191,7 @@ func doModulo(o *Object, c *Compiler) (uint32, bool) {
 func doMirror(o *Object, c *Compiler, dir int) {
 	v := o.extractLasers(1, c.CurrentTick)
 	if len(v) == 1 && o.Next[dir] >= 0 {
-		c.Objects[o.Next[dir]].Lasers = append(c.Objects[o.Next[dir]].Lasers, Laser{v[0], c.CurrentTick})
+		c.Objects[o.Next[dir]].Lasers = append(c.Objects[o.Next[dir]].Lasers, Laser{v[0], c.CurrentTick + 1})
 	}
 }
 
