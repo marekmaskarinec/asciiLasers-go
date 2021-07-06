@@ -22,10 +22,10 @@ func main() {
 	}*/
 
 	startTime = time.Now()
-	for !c.ShouldQuit {
-		/*c.prettyPrint()
+	for c.ShouldQuit {
+		c.prettyPrint()
 		time.Sleep(200 * time.Millisecond)
-		fmt.Print("\033[1J")*/
+		fmt.Print("\033[1J")
 		c.tick()
 	}
 }

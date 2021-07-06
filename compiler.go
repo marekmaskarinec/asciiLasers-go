@@ -138,6 +138,7 @@ func compile(inp string) Compiler {
 	c.Input = strings.Split(inp, "\n")
 	c.getObjects()
 	c.genGraph()
+	c.warn()
 	c.ShouldQuit = false
 	return c
 }
