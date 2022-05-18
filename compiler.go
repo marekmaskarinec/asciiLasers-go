@@ -55,29 +55,67 @@ func (c *Compiler) objByPos(v Vec2) int {
 // Walks in a direction v from start until it reaches the bounds or comes across an object
 func (c *Compiler) walkDir(start Vec2, v Vec2) Vec2 {
 	pos := start.Add(v)
-	for c.inBounds(pos) && c.onPos(pos) == ' ' { // this doesn't do the torus thingie
+	for c.inBounds(pos) && (c.onPos(pos) == ' ' || isWire(c.onPos(pos))) {
 		pos = pos.Add(v)
 	}
 	return pos
 }
 
+func (c *Compiler) walkWireDir(p1, v Vec2) Vec2 {
+	p2 := p1.Add(v)
+	c1 := c.onPos(p1)
+	c2 := c.onPos(p2)
+
+	if (p1.X-p2.X != 0 && (c1 == '-' || c1 == 'O') && (c2 == '-' || c2 == 'O')) ||
+		(p1.Y-p2.Y != 0 && (c1 == '|' || c1 == 'O') && (c2 == '|' || c2 == 'O')) ||
+		(!isWire(c1) && isWire(c2)) || (isWire(c1) && !isWire(c2)) {
+		return p2
+	}
+
+	if c2 == '+' {
+		return c.walkWireDir(p1, v.Add(v))
+	}
+
+	return Vec2{-1, -1}
+}
+
+func (c *Compiler) genCircuit(idx int, wireGraph [][4]int) {
+	o := &c.Objects[idx]
+
+	if o.Circuit == nil {
+		o.Circuit = new(Circuit)
+		o.Circuit.Objects = []int{idx}
+	}
+
+	for i := 0; i < 4; i++ {
+		if wireGraph[idx][i] < 0 {
+			continue
+		}
+
+		if c.Objects[wireGraph[idx][i]].Circuit != nil {
+			continue
+		}
+
+		o.Circuit.Objects = append(o.Circuit.Objects, wireGraph[idx][i])
+		c.Objects[wireGraph[idx][i]].Circuit = o.Circuit
+		c.genCircuit(wireGraph[idx][i], wireGraph)
+	}
+}
+
 // Generates objects from a graph
 func (c *Compiler) genGraph() {
+	wireGraph := make([][4]int, len(c.Objects))
+
 	for i := range c.Objects {
 		isMirror := c.Objects[i].isMirror()
-		isWire := c.Objects[i].isWire()
 		for j := 0; j < 4; j++ {
 			c.Objects[i].Next[j] = -1
+			wireGraph[i][j] = -1
+
+			wireGraph[i][j] = c.objByPos(
+				c.walkWireDir(c.Objects[i].Pos, MOTIONS[j]))
 
 			next := c.walkDir(c.Objects[i].Pos, MOTIONS[j])
-			if isWire {
-				if o := c.objByPos(next); o >= 0 && c.Objects[o].isWire() {
-					c.Objects[i].Next[j] = o
-				}
-
-				continue
-			}
-
 			if !isMirror {
 				if !next.Cmp(c.Objects[i].Pos.Add(MOTIONS[j])) {
 					continue
@@ -90,6 +128,14 @@ func (c *Compiler) genGraph() {
 
 			c.Objects[i].Next[j] = c.objByPos(next)
 		}
+	}
+
+	for i := 0; i < len(wireGraph); i++ {
+		if c.Objects[i].Circuit != nil {
+			continue
+		}
+
+		c.genCircuit(i, wireGraph)
 	}
 }
 
@@ -104,6 +150,9 @@ func (c *Compiler) prettyPrint() {
 			o := c.Objects[c.objByPos(Vec2{x, y})]
 			if len(o.Lasers) != 0 {
 				fmt.Print("\033[41m")
+			}
+			if o.Circuit.Current {
+				fmt.Print("\033[33m")
 			}
 			fmt.Printf("%c\033[0m", o.Def)
 		}

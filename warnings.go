@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"unicode"
 	"strings"
+	"unicode"
 )
 
 func printWarning(message string, o Object) {

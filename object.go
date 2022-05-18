@@ -10,16 +10,34 @@ type Laser struct {
 	Tick uint64
 }
 
-type Object struct {
-	Def     byte
-	Pos     Vec2
-	Lasers  []Laser
-	Next    [4]int // they are not represented as pointers, but as indexes in c.Objects
+type Circuit struct {
+	// indices to the object array
+	Objects []int
 	Current bool
 }
 
+func (c *Circuit) toggle(com *Compiler) {
+	c.Current = !c.Current
+
+	for i := 0; i < len(c.Objects); i++ {
+		fn := com.Defs[com.Objects[c.Objects[i]].Def].WireFunc
+		if fn != nil {
+			fn(&com.Objects[c.Objects[i]], com)
+		}
+	}
+}
+
+type Object struct {
+	Def    byte
+	Pos    Vec2
+	Lasers []Laser
+	// indices to the object array
+	Next    [4]int
+	Circuit *Circuit
+}
+
 func (o *Object) String() string {
-	return fmt.Sprintf("[ %d %d ]: { '%c', %v }", o.Pos.X, o.Pos.Y, o.Def, o.Next)
+	return fmt.Sprintf("[ %d %d ]: { '%c', %v, %d }", o.Pos.X, o.Pos.Y, o.Def, o.Next, len(o.Circuit.Objects))
 }
 
 func (o *Object) isMirror() bool {

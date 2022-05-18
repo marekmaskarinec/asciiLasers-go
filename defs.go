@@ -8,8 +8,10 @@ import (
 type Def struct {
 	Name string
 	Char byte
-	Argc int                                         // 0 means that it is operated by current. Negative values mean, it can be operated by both + argc
-	Func func(o *Object, c *Compiler) (uint32, bool) // returns a laser as the output, and true if it should be sent
+	Argc int
+	// returns a laser as the output, and true if it should be sent
+	Func     func(o *Object, c *Compiler) (uint32, bool)
+	WireFunc func(o *Object, c *Compiler)
 }
 
 // IO
@@ -80,6 +82,17 @@ func doDecrement(o *Object, c *Compiler) (uint32, bool) {
 	}
 
 	return v[0] - 1, true
+}
+
+func doLaserDetector(o *Object, c *Compiler) (uint32, bool) {
+	o.Circuit.toggle(c)
+
+	v := o.extractLasers(1, c.CurrentTick)
+	if len(v) == 0 {
+		return 0, false
+	}
+
+	return v[0], true
 }
 
 func doDeleter(o *Object, c *Compiler) (uint32, bool) {
@@ -215,52 +228,149 @@ func doLeftMirror(o *Object, c *Compiler) (uint32, bool) {
 	return 0, false
 }
 
+func wireNone(o *Object, c *Compiler) {}
+
+func wireUpMirror(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'v'
+	} else {
+		o.Def = '^'
+	}
+}
+
+func wireRightMirror(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = '<'
+	} else {
+		o.Def = '>'
+	}
+}
+
+func wireLeftMirror(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = '>'
+	} else {
+		o.Def = '<'
+	}
+}
+
+func wireDownMirror(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = '^'
+	} else {
+		o.Def = 'v'
+	}
+}
+
+func wireDeleter(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = '*'
+	} else {
+		o.Def = '#'
+	}
+}
+
+func wireReflector(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = '#'
+	} else {
+		o.Def = '*'
+	}
+}
+
+func wireIncrement(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'd'
+	} else {
+		o.Def = 'i'
+	}
+}
+
+func wireDecrement(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'i'
+	} else {
+		o.Def = 'd'
+	}
+}
+
+func wireAddition(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 's'
+	} else {
+		o.Def = 'a'
+	}
+}
+
+func wireSubtraction(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'a'
+	} else {
+		o.Def = 's'
+	}
+}
+
+func wireMultiplication(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'n'
+	} else {
+		o.Def = 'm'
+	}
+}
+
+func wireDivision(o *Object, c *Compiler) {
+	if o.Circuit.Current {
+		o.Def = 'm'
+	} else {
+		o.Def = 'n'
+	}
+}
+
 func (c *Compiler) initDefs() {
 	// IO
-	c.Defs['$'] = Def{"value print", '$', 1, doValuePrint}
-	c.Defs['&'] = Def{"char print", '&', 1, doCharPrint}
-	c.Defs['{'] = Def{"program start", '{', 0, doProgramStart}
-	c.Defs['}'] = Def{"program end", '}', -1, doProgramEnd}
-	c.Defs['_'] = Def{"input", '_', -1, doInput}
+	c.Defs['$'] = Def{"value print", '$', 1, doValuePrint, nil}
+	c.Defs['&'] = Def{"char print", '&', 1, doCharPrint, nil}
+	c.Defs['{'] = Def{"program start", '{', 0, doProgramStart, nil}
+	c.Defs['}'] = Def{"program end", '}', -1, doProgramEnd, nil}
+	c.Defs['_'] = Def{"input", '_', -1, doInput, nil}
 
 	// mirrors
-	c.Defs['\\'] = Def{"backslash mirror", '\\', -1, nil}
-	c.Defs['/'] = Def{"slash mirror", '/', -1, nil}
-	c.Defs['^'] = Def{"up mirror", '^', -1, doUpMirror}
-	c.Defs['>'] = Def{"right mirror", '>', -1, doRightMirror}
-	c.Defs['v'] = Def{"down mirror", 'v', -1, doDownMirror}
-	c.Defs['<'] = Def{"left mirror", '<', -1, doLeftMirror}
-	c.Defs['='] = Def{"horizontal mirror", '=', -1, nil}
-	c.Defs['H'] = Def{"vertical mirror", 'H', -1, nil}
+	c.Defs['\\'] = Def{"backslash mirror", '\\', -1, nil, nil}
+	c.Defs['/'] = Def{"slash mirror", '/', -1, nil, nil}
+	c.Defs['^'] = Def{"up mirror", '^', -1, doUpMirror, wireUpMirror}
+	c.Defs['>'] = Def{"right mirror", '>', -1, doRightMirror, wireRightMirror}
+	c.Defs['v'] = Def{"down mirror", 'v', -1, doDownMirror, wireDownMirror}
+	c.Defs['<'] = Def{"left mirror", '<', -1, doLeftMirror, wireLeftMirror}
+	c.Defs['='] = Def{"horizontal mirror", '=', -1, nil, nil}
+	c.Defs['H'] = Def{"vertical mirror", 'H', -1, nil, nil}
 
 	// modifiers
-	c.Defs['*'] = Def{"reflector", '*', 1, doReflector}
-	c.Defs['i'] = Def{"increment", 'i', 1, doIncrement}
-	c.Defs['d'] = Def{"decrement", 'd', 1, doDecrement}
+	c.Defs['*'] = Def{"reflector", '*', 1, doReflector, wireReflector}
+	c.Defs['i'] = Def{"increment", 'i', 1, doIncrement, wireIncrement}
+	c.Defs['d'] = Def{"decrement", 'd', 1, doDecrement, wireDecrement}
+	c.Defs['@'] = Def{"laser detector", '@', 1, doLaserDetector, nil}
 
-	c.Defs['0'] = Def{"set to 0", '0', 1, do0}
-	c.Defs['1'] = Def{"set to 1", '1', 1, do1}
-	c.Defs['2'] = Def{"set to 2", '2', 1, do2}
-	c.Defs['3'] = Def{"set to 3", '3', 1, do3}
-	c.Defs['4'] = Def{"set to 4", '4', 1, do4}
-	c.Defs['5'] = Def{"set to 5", '5', 1, do5}
-	c.Defs['6'] = Def{"set to 6", '6', 1, do6}
-	c.Defs['7'] = Def{"set to 7", '7', 1, do7}
-	c.Defs['8'] = Def{"set to 8", '8', 1, do8}
-	c.Defs['9'] = Def{"set to 9", '9', 1, do9}
-	c.Defs['A'] = Def{"set to 10", 'A', 1, doA}
-	c.Defs['B'] = Def{"set to 11", 'B', 1, doB}
-	c.Defs['C'] = Def{"set to 12", 'C', 1, doC}
-	c.Defs['D'] = Def{"set to 13", 'D', 1, doD}
-	c.Defs['E'] = Def{"set to 14", 'E', 1, doE}
-	c.Defs['F'] = Def{"set to 15", 'F', 1, doF}
+	c.Defs['0'] = Def{"set to 0", '0', 1, do0, nil}
+	c.Defs['1'] = Def{"set to 1", '1', 1, do1, nil}
+	c.Defs['2'] = Def{"set to 2", '2', 1, do2, nil}
+	c.Defs['3'] = Def{"set to 3", '3', 1, do3, nil}
+	c.Defs['4'] = Def{"set to 4", '4', 1, do4, nil}
+	c.Defs['5'] = Def{"set to 5", '5', 1, do5, nil}
+	c.Defs['6'] = Def{"set to 6", '6', 1, do6, nil}
+	c.Defs['7'] = Def{"set to 7", '7', 1, do7, nil}
+	c.Defs['8'] = Def{"set to 8", '8', 1, do8, nil}
+	c.Defs['9'] = Def{"set to 9", '9', 1, do9, nil}
+	c.Defs['A'] = Def{"set to 10", 'A', 1, doA, nil}
+	c.Defs['B'] = Def{"set to 11", 'B', 1, doB, nil}
+	c.Defs['C'] = Def{"set to 12", 'C', 1, doC, nil}
+	c.Defs['D'] = Def{"set to 13", 'D', 1, doD, nil}
+	c.Defs['E'] = Def{"set to 14", 'E', 1, doE, nil}
+	c.Defs['F'] = Def{"set to 15", 'F', 1, doF, nil}
 
-	c.Defs['#'] = Def{"deleter", '#', 1, doDeleter}
-	c.Defs['m'] = Def{"multiplication", 'm', 2, doMultiplication}
-	c.Defs['n'] = Def{"division", 'n', 2, doDivision}
-	c.Defs['a'] = Def{"addition", 'a', 2, doAddition}
-	c.Defs['s'] = Def{"subtraction", 's', 2, doSubtraction}
-	c.Defs['l'] = Def{"modulo", 'l', 2, doModulo}
-
-	// wires are TODO
+	c.Defs['#'] = Def{"deleter", '#', 1, doDeleter, wireDeleter}
+	c.Defs['m'] = Def{"multiplication", 'm', 2, doMultiplication, wireMultiplication}
+	c.Defs['n'] = Def{"division", 'n', 2, doDivision, wireDivision}
+	c.Defs['a'] = Def{"addition", 'a', 2, doAddition, wireAddition}
+	c.Defs['s'] = Def{"subtraction", 's', 2, doSubtraction, wireSubtraction}
+	c.Defs['l'] = Def{"modulo", 'l', 2, doModulo, nil}
 }

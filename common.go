@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 //x---'
 //    'Y
 type Vec2 struct {
@@ -13,6 +15,10 @@ func (v *Vec2) Add(v2 Vec2) Vec2 { // this doesn't modify
 
 func (v *Vec2) Cmp(v2 Vec2) bool {
 	return (v.X == v2.X && v.Y == v2.Y)
+}
+
+func isWire(char byte) bool {
+	return strings.Contains("-|+O", string(char))
 }
 
 const UP = 0
